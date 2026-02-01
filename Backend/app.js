@@ -8,7 +8,10 @@ app.use(express.json());
 app.use('/avatars', express.static('public/avatars'));
 app.use(
   cors({
-    origin: "https://ptn-task.vercel.app",
+    origin:[
+      "https://ptn-task.vercel.app",
+      "http://localhost:5173"
+    ],
     credentials: true,
   }),
 );

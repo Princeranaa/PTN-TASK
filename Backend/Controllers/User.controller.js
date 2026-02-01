@@ -2,7 +2,6 @@ const userModel = require("../Model/Auth.model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-
 const generateAvatar = (firstname, lastname) => {
   const initials = `${firstname[0]}${lastname[0]}`;
   return `https://ui-avatars.com/api/?name=${initials}&background=0D8ABC&color=fff&size=128&rounded=true&bold=true`;
@@ -26,14 +25,14 @@ exports.register = async (req, res) => {
     }
 
     const hash = await bcrypt.hash(password, 10);
-    
+
     const avatar = generateAvatar(firstname, lastname);
 
     const user = await userModel.create({
       email,
       fullname: { firstname, lastname },
       password: hash,
-       avatar,
+      avatar,
     });
 
     const token = jwt.sign(
@@ -41,7 +40,11 @@ exports.register = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "1h" },
     );
-    res.cookie("token", token);
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+    });
 
     res.status(201).json({
       message: "User Registered Successfully",
@@ -86,7 +89,11 @@ exports.login = async (req, res) => {
     { expiresIn: "1h" },
   );
 
-  res.cookie("token", token);
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+  });
 
   res.status(200).json({
     message: "User logged in successfully",
@@ -117,8 +124,11 @@ exports.profile = async (req, res) => {
 
 exports.logout = async (req, res) => {
   try {
-    res.cookie("token", null, {
-      expires: new Date(Date.now()),
+    res.cookie("token", "", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      expires: new Date(0), // expire immediately
     });
 
     return res
